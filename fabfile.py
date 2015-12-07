@@ -27,7 +27,7 @@ def restart_app():
     sudo('stop slackfit; true')
     with cd(env.sitedir):
         sudo('rm -f /etc/init/slackfit.conf')
-        sudo('ln -s /home/ubuntu/code/slack-fit/etc/slackfit.conf /etc/init/slackfit.conf')
+        sudo('mv /home/ubuntu/code/slack-fit/etc/slackfit.conf /etc/init/slackfit.conf')
         sudo('service slackfit start')
 
 

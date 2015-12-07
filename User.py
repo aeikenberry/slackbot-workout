@@ -3,6 +3,7 @@ import requests
 import json
 import datetime
 
+
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
 

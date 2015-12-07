@@ -10,10 +10,11 @@ import pickle
 import datetime
 
 from dotenv import load_dotenv
-from User import User
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
+
+from User import User
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
