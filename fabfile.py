@@ -26,7 +26,7 @@ def test_creds():
 def restart_app():
     sudo('stop slackfit; true')
     sudo('rm -f /etc/init/slackfit.conf')
-    sudo('etc/slackfit.conf /etc/init/slackfit.conf')
+    sudo('ln -s etc/slackfit.conf /etc/init/slackfit.conf')
     sudo('service slackfit start')
 
 
