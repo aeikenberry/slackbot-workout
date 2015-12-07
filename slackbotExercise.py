@@ -4,12 +4,16 @@ import requests
 import json
 import csv
 import os
+from os.path import dirname, isfile, join
 from random import shuffle
 import pickle
-import os.path
 import datetime
 
+from dotenv import load_dotenv
 from User import User
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
@@ -38,7 +42,7 @@ class Bot:
         self.user_queue = []
 
     def loadUserCache(self):
-        if os.path.isfile('user_cache.save'):
+        if isfile('user_cache.save'):
             with open('user_cache.save', 'rb') as f:
                 self.user_cache = pickle.load(f)
                 print "Loading " + str(len(self.user_cache)) + " users from cache."
