@@ -12,9 +12,9 @@ import datetime
 from User import User
 
 # Environment variables must be set with your tokens
-USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
-URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
-
+USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
+URL_TOKEN_STRING = os.environ['SLACK_URL_TOKEN_STRING']
+SERVICES_STRING = '.slack.com/services/hooks/slackbot?token='
 HASH = "%23"
 
 
@@ -25,6 +25,10 @@ class Bot:
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
+        self.debug = os.environ.get('DEBUG', False)
+        self.team_domain = os.environ.get('DOMAIN')
+        self.channel_name = os.environ.get('CHANNEL_NAME')
+        self.channel_id = os.environ.get('CHANNEL_ID')
 
         # local cache of usernames
         # maps userIds to usernames
@@ -33,49 +37,49 @@ class Bot:
         # round robin store
         self.user_queue = []
 
-
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
-            with open('user_cache.save','rb') as f:
+            with open('user_cache.save', 'rb') as f:
                 self.user_cache = pickle.load(f)
                 print "Loading " + str(len(self.user_cache)) + " users from cache."
                 return self.user_cache
 
         return {}
 
-    '''
-    Sets the configuration file.
-
-    Runs after every callout so that settings can be changed realtime
-    '''
     def setConfiguration(self):
+        '''
+        Sets the configuration file.
+
+        Runs after every callout so that settings can be changed realtime
+        '''
+
         # Read variables fromt the configuration file
         with open('config.json') as f:
             settings = json.load(f)
 
-            self.team_domain = settings["teamDomain"]
-            self.channel_name = settings["channelName"]
             self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
             self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
             self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
-            self.channel_id = settings["channelId"]
             self.exercises = settings["exercises"]
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
 
-            self.debug = settings["debug"]
+        self.post_URL = 'https://{}{}{}{}{}'.format(
+            self.team_domain, SERVICES_STRING,
+            URL_TOKEN_STRING, HASH, self.channel_name,
+        )
 
-        self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
+
+###############################################################################
 
 
-################################################################################
-'''
-Selects an active user from a list of users
-'''
 def selectUser(bot, exercise):
+    '''
+    Selects an active user from a list of users
+    '''
     active_users = fetchActiveUsers(bot)
 
     # Add all active users not already in the user queue
@@ -116,10 +120,10 @@ def selectUser(bot, exercise):
     return active_users[random.randrange(0, len(active_users))]
 
 
-'''
-Fetches a list of all active users in the channel
-'''
 def fetchActiveUsers(bot):
+    '''
+    Fetches a list of all active users in the channel
+    '''
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -133,7 +137,7 @@ def fetchActiveUsers(bot):
             bot.user_cache[user_id] = User(user_id)
             if not bot.first_run:
                 # Push our new users near the front of the queue!
-                bot.user_queue.insert(2,bot.user_cache[user_id])
+                bot.user_queue.insert(2, bot.user_cache[user_id])
 
         if bot.user_cache[user_id].isActive():
             active_users.append(bot.user_cache[user_id])
@@ -143,11 +147,12 @@ def fetchActiveUsers(bot):
 
     return active_users
 
-'''
-Selects an exercise and start time, and sleeps until the time
-period has past.
-'''
+
 def selectExerciseAndStartTime(bot):
+    '''
+    Selects an exercise and start time, and sleeps until the time
+    period has past.
+    '''
     next_time_interval = selectNextTimeInterval(bot)
     minute_interval = next_time_interval/60
     exercise = selectExercise(bot)
@@ -170,29 +175,31 @@ def selectExerciseAndStartTime(bot):
     return exercise
 
 
-'''
-Selects the next exercise
-'''
 def selectExercise(bot):
+    '''
+    Selects the next exercise
+    '''
     idx = random.randrange(0, len(bot.exercises))
     return bot.exercises[idx]
 
 
-'''
-Selects the next time interval
-'''
 def selectNextTimeInterval(bot):
+    '''
+    Selects the next time interval
+    '''
     return random.randrange(bot.min_countdown * 60, bot.max_countdown * 60)
 
 
-'''
-Selects a person to do the already-selected exercise
-'''
 def assignExercise(bot, exercise):
+    '''
+    Selects a person to do the already-selected exercise
+    '''
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
-    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
+    winner_announcement = '{reps} {units} {name} RIGHT NOW!'.format(
+        str(exercise_reps), str(exercise["units"]), exercise["name"],
+    )
 
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
@@ -202,10 +209,17 @@ def assignExercise(bot, exercise):
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
 
-        logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
+        logExercise(
+            bot,
+            "@channel",
+            exercise["name"],
+            exercise_reps,
+            exercise["units"]
+        )
 
     else:
-        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        winners = [selectUser(bot, exercise)
+                   for i in range(bot.num_people_per_callout)]
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())
@@ -217,7 +231,14 @@ def assignExercise(bot, exercise):
                 winner_announcement += ", "
 
             winners[i].addExercise(exercise, exercise_reps)
-            logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+
+            logExercise(
+                bot,
+                winners[i].getUserHandle(),
+                exercise["name"],
+                exercise_reps,
+                exercise["units"]
+            )
 
     # Announce the user
     if not bot.debug:
@@ -225,17 +246,20 @@ def assignExercise(bot, exercise):
     print winner_announcement
 
 
-def logExercise(bot,username,exercise,reps,units):
+def logExercise(bot, username, exercise, reps, units):
     filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename
     with open(filename, 'a') as f:
         writer = csv.writer(f)
 
-        writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
+        writer.writerow([str(datetime.datetime.now()),
+                         username, exercise, reps,
+                         units, bot.debug])
+
 
 def saveUsers(bot):
     # Write to the command console today's breakdown
     s = "```\n"
-    #s += "Username\tAssigned\tComplete\tPercent
+    # s += "Username\tAssigned\tComplete\tPercent
     s += "Username".ljust(15)
     for exercise in bot.exercises:
         s += exercise["name"] + "  "
@@ -259,10 +283,10 @@ def saveUsers(bot):
         requests.post(bot.post_URL, data=s)
     print s
 
-
     # write to file
     with open('user_cache.save','wb') as f:
         pickle.dump(bot.user_cache,f)
+
 
 def isOfficeHours(bot):
     if not bot.office_hours_on:
@@ -279,6 +303,7 @@ def isOfficeHours(bot):
         if bot.debug:
             print "out office hours"
         return False
+
 
 def main():
     bot = Bot()
@@ -298,7 +323,7 @@ def main():
             else:
                 # Sleep the script and check again for office hours
                 if not bot.debug:
-                    time.sleep(5*60) # Sleep 5 minutes
+                    time.sleep(5*60)  # Sleep 5 minutes
                 else:
                     # If debugging, check again in 5 seconds
                     time.sleep(5)
