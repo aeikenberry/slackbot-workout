@@ -204,6 +204,11 @@ def assignExercise(bot, exercise):
     '''
     Selects a person to do the already-selected exercise
     '''
+
+    if not self.fetchActiveUsers(bot):
+        print('No active users for exercise', exercise)
+        return requests.post(bot.post_URL, data="Where ya'll at?")
+
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
@@ -228,8 +233,8 @@ def assignExercise(bot, exercise):
         )
 
     else:
-        winners = [selectUser(bot, exercise)
-                   for i in range(bot.num_people_per_callout)]
+        winners = {selectUser(bot, exercise)
+                   for i in range(bot.num_people_per_callout)}
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())
