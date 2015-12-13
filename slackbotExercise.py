@@ -20,7 +20,7 @@ from User import User
 USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING = os.environ['SLACK_URL_TOKEN_STRING']
 SERVICES_STRING = '.slack.com/services/hooks/slackbot?token='
-HASH = "%23"
+HASH = "&channel=%23"
 
 
 # Configuration values to be set in setConfiguration
