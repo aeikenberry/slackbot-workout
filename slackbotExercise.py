@@ -166,6 +166,8 @@ def selectExerciseAndStartTime(bot):
     minute_interval = next_time_interval/60
     exercise = selectExercise(bot)
 
+    print(exercise)
+
     # Announcement String of next lottery time
     lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
 
