@@ -251,7 +251,9 @@ def assignExercise(bot, exercise):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_URL, data=winner_announcement)
+        print('posting')
+        request = requests.post(bot.post_URL, data=winner_announcement)
+        print(request)
     print winner_announcement
 
 
