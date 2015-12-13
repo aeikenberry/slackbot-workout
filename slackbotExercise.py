@@ -206,7 +206,7 @@ def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
-    winner_announcement = '{reps} {units} {name} RIGHT NOW!'.format(
+    winner_announcement = '{} {} {} RIGHT NOW!'.format(
         str(exercise_reps), str(exercise["units"]), exercise["name"],
     )
 
