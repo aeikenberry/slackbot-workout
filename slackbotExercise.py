@@ -26,14 +26,14 @@ HASH = "%23"
 # Configuration values to be set in setConfiguration
 class Bot:
     def __init__(self):
-        self.setConfiguration()
-
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
         self.debug = os.environ.get('DEBUG', False)
         self.team_domain = os.environ.get('DOMAIN')
         self.channel_name = os.environ.get('CHANNEL_NAME')
         self.channel_id = os.environ.get('CHANNEL_ID')
+
+        self.setConfiguration()
 
         # local cache of usernames
         # maps userIds to usernames
