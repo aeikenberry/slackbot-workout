@@ -171,7 +171,8 @@ def selectExerciseAndStartTime(bot):
 
     # Announce the exercise to the thread
     if not bot.debug:
-        requests.post(bot.post_URL, data=lottery_announcement)
+        request = requests.post(bot.post_URL, data=lottery_announcement)
+        print('request to post lottery announcement', request)
     print lottery_announcement
 
     # Sleep the script until time is up
