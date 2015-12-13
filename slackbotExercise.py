@@ -77,6 +77,8 @@ class Bot:
             URL_TOKEN_STRING, HASH, self.channel_name,
         )
 
+        print(self.post_URL)
+
 
 ###############################################################################
 
@@ -133,7 +135,7 @@ def fetchActiveUsers(bot):
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
     user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
-
+    print('active_users params', params, response)
     active_users = []
 
     for user_id in user_ids:
@@ -149,6 +151,8 @@ def fetchActiveUsers(bot):
 
     if bot.first_run:
         bot.first_run = False
+
+    print('active users', active_users)
 
     return active_users
 
