@@ -205,7 +205,7 @@ def assignExercise(bot, exercise):
     Selects a person to do the already-selected exercise
     '''
 
-    if not self.fetchActiveUsers(bot):
+    if not fetchActiveUsers(bot):
         print('No active users for exercise', exercise)
         return requests.post(bot.post_URL, data="Where ya'll at?")
 
