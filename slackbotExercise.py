@@ -235,8 +235,10 @@ def assignExercise(bot, exercise):
         )
 
     else:
-        winners = {selectUser(bot, exercise)
-                   for i in range(bot.num_people_per_callout)}
+        winners = [selectUser(bot, exercise)
+                   for i in range(bot.num_people_per_callout)]
+
+        winners = list(set(winners))
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())
