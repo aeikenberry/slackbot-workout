@@ -239,12 +239,13 @@ def assignExercise(bot, exercise):
                    for i in range(bot.num_people_per_callout)]
 
         winners = list(set(winners))
+        winners_amount = len(winnders)
 
-        for i in range(bot.num_people_per_callout):
+        for i in range(winners_amount):
             winner_announcement += str(winners[i].getUserHandle())
-            if i == bot.num_people_per_callout - 2:
+            if i == winners_amount - 2:
                 winner_announcement += ", and "
-            elif i == bot.num_people_per_callout - 1:
+            elif i == winners_amount - 1:
                 winner_announcement += "!"
             else:
                 winner_announcement += ", "
