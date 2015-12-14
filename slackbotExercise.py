@@ -239,7 +239,7 @@ def assignExercise(bot, exercise):
                    for i in range(bot.num_people_per_callout)]
 
         winners = list(set(winners))
-        winners_amount = len(winnders)
+        winners_amount = len(winners)
 
         for i in range(winners_amount):
             winner_announcement += str(winners[i].getUserHandle())
