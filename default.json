@@ -2,7 +2,8 @@
   "officeHours": {
     "on": true,
     "begin": 9,
-    "end": 17
+    "end": 17,
+    "weekdaysOnly": true
    },
 
   "debug": false,

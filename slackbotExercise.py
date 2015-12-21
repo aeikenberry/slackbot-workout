@@ -71,6 +71,7 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
+            self.office_hours_weekdays_only = settings["officeHours"]["weekdaysOnly"]
 
         self.post_URL = 'https://{}{}{}{}{}'.format(
             self.team_domain, SERVICES_STRING,
@@ -317,6 +318,13 @@ def isOfficeHours(bot):
         return True
     now = datetime.datetime.now()
     now_time = now.time()
+
+    if bot.office_hours_weekdays_only:
+        if now.weekday() in [5, 6]:
+            if bot.debug:
+                print "weekdays only, out office hours"
+            return False
+
     if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
         if bot.debug:
             print "in office hours"
